@@ -1,9 +1,11 @@
 <?php
 /*
-Plugin Name: افزونه درگاه پرداخت تاباپی برای ووکامرس
+Plugin Name: TabaPay Gateway
 Description: تاباپی - پرداخت یار رسمی شاپرک
 Plugin URI: https://tabapay.ir
 Version: 1.3.1
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 */
 
 if (!defined('ABSPATH')) {
