@@ -3,7 +3,7 @@ Contributors: TabaPay
 Tags: woocommerce, payment gateway, tabapay, iran, shaparak
 Requires at least: 5.0
 Tested up to: 6.7
-Stable tag: 1.3.1
+Stable tag: 1.2.2
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -33,11 +33,11 @@ You can obtain your Merchant Key by signing up at [Tabapay](https://tabapay.ir).
 Yes, it supports IRR, IRT, IRHT, and IRHR with automatic conversion.
 
 == Changelog ==
-= 1.3.1 =
+= 1.2.2 =
 * Initial release with full payment and callback functionality.
 
 == Upgrade Notice ==
-= 1.3.1 =
+= 1.2.2 =
 Initial release – no upgrade notices yet.
 
 == Screenshots ==
