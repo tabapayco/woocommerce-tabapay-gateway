@@ -26,3 +26,5 @@ This plugin allows you to easily integrate the Tabapay payment gateway into your
 3. Navigate to **Plugins** > **Add New** > **Upload Plugin**.
 4. Upload the downloaded ZIP file.
 5. Install and activate the plugin.
+
+Stable branch does not included " Auto Verify " functions, see auto-verify branch instead.
