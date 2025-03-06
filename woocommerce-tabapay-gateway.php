@@ -3,7 +3,7 @@
 Plugin Name: افزونه درگاه پرداخت تاباپی برای ووکامرس
 Description: تاباپی - پرداخت یار رسمی شاپرک
 Plugin URI: https://tabapay.ir
-Version: 1.2.2
+Version: 1.3.1
 */
 
 if (!defined('ABSPATH')) {
@@ -121,7 +121,7 @@ function init_tabapay_gateway()
 
         public function handle_tabapay_callback()
         {
-            if (!empty($_GET['token'])) {
+            if (!empty($_GET['token']) || !empty($_POST['token'])) {
                 if (isset($_GET['wc_order'])) {
                     $order_id = sanitize_text_field($_GET['wc_order']);
                 } else {
@@ -154,10 +154,52 @@ function init_tabapay_gateway()
                         $amount *= 100;
                     }
 
-                    if (!empty($_GET['status']) && $_GET['status'] == "success" && $_GET['responseCode'] == 1) {
+                    if (!empty($_SERVER['HTTP_AUTHORIZE']) && md5($this->merchant_key) == $_SERVER['HTTP_AUTHORIZE']) {
+                        $responseData = $_POST;
+                        if ($responseData['status'] == "success" && $responseData['responseCode'] == 1) {
+                            $Transaction_ID = $responseData['trackingCode'];
+                            $cardNumber = $responseData['cardNumber'];
+                            $ip = $responseData['ip'];
+                            $date = $responseData['date'];
+                            $payment = $order->payment_complete();
+                            if($payment){
+                                echo (json_encode(['status' => 'success']));
+                                
+                                $Note = sprintf(__('پرداخت موفقیت آمیز بود.
+                                                <br/> کد پیگیری : %s
+                                                <br/> شماره کارت : %s
+                                                <br/> آی‌پی : %s
+												<br/> تاریخ : %s
+                                                <br/> نوع تایید : تاباپی', 'woocommerce'), $Transaction_ID, $cardNumber, $ip, $date);
+                                $Note = apply_filters('Tabapay_Success_Note', $Note, $order_id, $Transaction_ID);
+                                if ($Note)
+                                    $order->add_order_note($Note, 1);
+    
+                                $Notice = sprintf(__('پرداخت موفقیت آمیز بود .<br/> کد رهگیری : %s', 'woocommerce'), $Transaction_ID);
+                                $Notice = apply_filters('Tabapay_Success_Notice', $Notice, $order_id, $Transaction_ID);
+                                if ($Notice)
+                                    wc_add_notice($Notice, 'success');
+    
+                                do_action('Tabapay_Success', $order_id, $Transaction_ID);
+                            }
+                            else
+                                echo false;
+                                
+                            exit;
+                        }
+                    }elseif (!empty($_GET['status']) && $_GET['status'] == "success" && $_GET['responseCode'] == 1) {
                         $token = $_GET['token'];
                         $tabaPayAPI = new TabaPayAPI($this->merchant_key);
-                        $responseData = $tabaPayAPI->VerifyTransaction($token, $amount);
+						
+						$maxAttempts = 3;
+                        $attempt = 0;
+                        $responseData = null;
+                        
+                        while ($attempt < $maxAttempts && (empty($responseData['status']))) {
+                            $responseData = $tabaPayAPI->VerifyTransaction($token, $amount);
+                            $attempt++;
+                        }
+						
                         if ($responseData['status'] == "success" && $responseData['responseCode'] == 1) {
                             $Transaction_ID = $responseData['trackingCode'];
                             $cardNumber = $responseData['cardNumber'];
@@ -169,7 +211,8 @@ function init_tabapay_gateway()
                                                 <br/> کد پیگیری : %s
                                                 <br/> شماره کارت : %s
                                                 <br/> آی‌پی : %s
-                                                <br/> تاریخ : %s', 'woocommerce'), $Transaction_ID, $cardNumber, $ip, $date);
+												<br/> تاریخ : %s
+                                                <br/> نوع تایید : مشتری', 'woocommerce'), $Transaction_ID, $cardNumber, $ip, $date);
                             $Note = apply_filters('Tabapay_Success_Note', $Note, $order_id, $Transaction_ID);
                             if ($Note)
                                 $order->add_order_note($Note, 1);
