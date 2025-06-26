@@ -56,44 +56,33 @@ class TabaPayAPI
         return $this->SendRequest("post", $this->verifyURL, $postData, $this->merchant);
     }
 
-
     private function SendRequest($method, $url, $postData = null, $merchant = null)
     {
-        // Request headers
-        $headers = array(
-            'Authorization: Bearer ' . $merchant,
-            'Content-Type: application/json',
+        $args = array(
+            'headers' => array(
+                'Authorization' => 'Bearer ' . $merchant,
+                'Content-Type' => 'application/json',
+            )
         );
 
-        // Initialize cURL session
-        $ch = curl_init($url);
-
-        // Set cURL options
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-
-        if ($method == "get") {
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
-        }
-        if ($method == "post") {
-            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $postData);
+        if ($method === 'post') {
+            $args['method'] = 'POST';
+            $args['body'] = $postData;
+        } else {
+            $args['method'] = 'GET';
         }
 
-        // Execute cURL session and get the response
-        $response = curl_exec($ch);
+        $response = wp_remote_request($url, $args);
 
-        // Check for cURL errors
-        if (curl_errno($ch)) {
-            echo 'Curl error: ' . curl_error($ch);
+        if (is_wp_error($response)) {
+            return array(
+                'error' => true,
+                'message' => $response->get_error_message(),
+            );
         }
 
-        // Close cURL session
-        curl_close($ch);
-
-        // Decode the API response
-        return json_decode($response, 1);
+        $body = wp_remote_retrieve_body($response);
+        return json_decode($body, true);
     }
-}
 
-?>
+}

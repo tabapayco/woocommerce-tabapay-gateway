@@ -21,8 +21,17 @@ This plugin allows you to easily integrate the Tabapay payment gateway into your
 ---
 
 ## Installation
-1. Download the plugin ZIP file from the [Releases Page](https://github.com/tabapayco/woocommerce-tabapay-gateway/releases).
+1. Download the plugin ZIP file from the [Wordpress](https://wordpress.org/plugins/tabapay-gateway/) or [Releases Page](https://github.com/tabapayco/woocommerce-tabapay-gateway/releases).
 2. Go to your WordPress admin dashboard.
 3. Navigate to **Plugins** > **Add New** > **Upload Plugin**.
 4. Upload the downloaded ZIP file.
 5. Install and activate the plugin.
+
+---
+
+Stable branch does not included " Auto Verify " functions, see auto-verify branch instead.
+
+---
+
+- License: GPLv2 or later
+- License URI: https://www.gnu.org/licenses/gpl-2.0.html

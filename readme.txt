@@ -2,8 +2,8 @@
 Contributors: TabaPay
 Tags: woocommerce, payment gateway, tabapay, iran, shaparak
 Requires at least: 5.0
-Tested up to: 6.7
-Stable tag: 1.3.1
+Tested up to: 6.8
+Stable tag: 1.3.2
 Requires PHP: 7.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -33,11 +33,11 @@ You can obtain your Merchant Key by signing up at [Tabapay](https://tabapay.ir).
 Yes, it supports IRR, IRT, IRHT, and IRHR with automatic conversion.
 
 == Changelog ==
-= 1.3.1 =
+= 1.3.2 =
 * Initial release with full payment and callback functionality.
 
 == Upgrade Notice ==
-= 1.3.1 =
+= 1.3.2 =
 Initial release – no upgrade notices yet.
 
 == Screenshots ==
@@ -46,3 +46,19 @@ Initial release – no upgrade notices yet.
 
 == License ==
 This plugin is licensed under the GNU General Public License version 2 or later. See the License URI for more details.
+
+== External services ==
+This plugin connects to the Tabapay API to process payments through Shaparak.
+
+When a customer proceeds to checkout and initiates a payment, the following data is sent to the Tabapay API:
+– Order amount
+– Order ID
+– Callback URL
+
+These requests are made to securely create and verify payment transactions on the Tabapay servers.
+
+All communications with the Tabapay API are done over HTTPS and follow secure protocols.
+
+Service Provider: [Tabapay.ir](https://tabapay.ir)  
+- [Terms and Conditions](https://tabapay.ir/terms-and-conditions)  
+- [Privacy Policy](https://tabapay.ir/privacy-policy)
