@@ -290,53 +290,53 @@ function tabapay_gateway()
             } elseif (strtolower($currency) === 'irhr') {
                 $factor = 100;
             }
-            $group_totals      = array();
+            $group_totals = array();
             $distinct_products = array(); // Distinct product_id (order preserved) for equal shipping split.
-            foreach ( $order->get_items() as $item ) {
-                if ( ! $item instanceof WC_Order_Item_Product ) {
+            foreach ($order->get_items() as $item) {
+                if (!$item instanceof WC_Order_Item_Product) {
                     continue;
                 }
-                $line_total = (float) $item->get_total();
-                $amount     = (int) round( $line_total * $factor );
+                $line_total = (float)$item->get_total();
+                $amount = (int)round($line_total * $factor);
                 $product_id = $item->get_product_id();
 
-                if ( ! in_array( $product_id, $distinct_products, true ) ) {
+                if (!in_array($product_id, $distinct_products, true)) {
                     $distinct_products[] = $product_id;
                 }
 
-                $invoice_id = isset( $product_to_invoice[ $product_id ] ) ? $product_to_invoice[ $product_id ] : null;
-                if ( null === $invoice_id ) {
+                $invoice_id = isset($product_to_invoice[$product_id]) ? $product_to_invoice[$product_id] : null;
+                if (null === $invoice_id) {
                     continue;
                 }
-                if ( ! isset( $group_totals[ $invoice_id ] ) ) {
-                    $group_totals[ $invoice_id ] = 0;
+                if (!isset($group_totals[$invoice_id])) {
+                    $group_totals[$invoice_id] = 0;
                 }
-                $group_totals[ $invoice_id ] += $amount;
+                $group_totals[$invoice_id] += $amount;
             }
-            if ( empty( $group_totals ) ) {
+            if (empty($group_totals)) {
                 return null;
             }
 
             // Shipping in order currency; convert to Rial with same factor as products.
-            $shipping_total_raw = (float) $order->get_shipping_total();
-            $shipping_total_int = (int) round( $shipping_total_raw * $factor );
-            $distribute         = ( 'yes' === $this->get_option( 'invoice_distribute_shipping', 'no' ) );
-            $shipping_inv_id    = trim( (string) $this->get_option( 'invoice_shipping_product_id', '' ) );
+            $shipping_total_raw = (float)$order->get_shipping_total();
+            $shipping_total_int = (int)round($shipping_total_raw * $factor);
+            $distribute = ('yes' === $this->get_option('invoice_distribute_shipping', 'no'));
+            $shipping_inv_id = trim((string)$this->get_option('invoice_shipping_product_id', ''));
 
-            if ( $shipping_total_int > 0 ) {
-                if ( $distribute && ! empty( $distinct_products ) ) {
+            if ($shipping_total_int > 0) {
+                if ($distribute && !empty($distinct_products)) {
                     // Equal split by number of distinct products; integer split so sum is exactly shipping.
-                    $num   = count( $distinct_products );
-                    $base  = (int) floor( $shipping_total_int / $num );
-                    $rem   = $shipping_total_int - $num * $base;
+                    $num = count($distinct_products);
+                    $base = (int)floor($shipping_total_int / $num);
+                    $rem = $shipping_total_int - $num * $base;
                     $per_product = array();
-                    foreach ( $distinct_products as $i => $pid ) {
-                        $per_product[ $pid ] = $base + ( $i < $rem ? 1 : 0 );
+                    foreach ($distinct_products as $i => $pid) {
+                        $per_product[$pid] = $base + ($i < $rem ? 1 : 0);
                     }
-                    foreach ( $distinct_products as $pid ) {
-                        $inv_id = isset( $product_to_invoice[ $pid ] ) ? $product_to_invoice[ $pid ] : null;
-                        if ( null !== $inv_id && isset( $per_product[ $pid ] ) ) {
-                            $group_totals[ $inv_id ] += $per_product[ $pid ];
+                    foreach ($distinct_products as $pid) {
+                        $inv_id = isset($product_to_invoice[$pid]) ? $product_to_invoice[$pid] : null;
+                        if (null !== $inv_id && isset($per_product[$pid])) {
+                            $group_totals[$inv_id] += $per_product[$pid];
                         }
                     }
                 } elseif ('' !== $shipping_inv_id) {
@@ -446,6 +446,8 @@ function tabapay_gateway()
 
                         if (isset($responseData['status'], $responseData['responseCode']) && $responseData['status'] == "success" && $responseData['responseCode'] == 1) {
                             $Transaction_ID = sanitize_text_field($responseData['trackingCode']);
+                            $amount = sanitize_text_field($responseData['amount']);
+                            $amount = number_format($amount) . ' ریال';
                             $cardNumber = sanitize_text_field($responseData['cardNumber']);
                             $ip = sanitize_text_field($responseData['ip']);
                             $date = sanitize_text_field($responseData['date']);
@@ -457,11 +459,13 @@ function tabapay_gateway()
                                 $Note = sprintf(
                                     __('پرداخت موفقیت آمیز بود.
                                         <br/> کد پیگیری : %1$s
-                                        <br/> شماره کارت : %2$s
-                                        <br/> آی‌پی : %3$s
-                                        <br/> تاریخ : %4$s
+                                        <br/> مبلغ : %2$s
+                                        <br/> شماره کارت : %3$s
+                                        <br/> آی‌پی : %4$s
+                                        <br/> تاریخ : %5$s
                                         <br/> نوع تایید : تاباپی', 'tabapay-gateway'),
                                     esc_html($Transaction_ID),
+                                    esc_html($amount),
                                     esc_html($cardNumber),
                                     esc_html($ip),
                                     esc_html($date)
@@ -500,6 +504,8 @@ function tabapay_gateway()
 
                         if ($responseData['status'] == "success" && $responseData['responseCode'] == 1) {
                             $Transaction_ID = sanitize_text_field($responseData['trackingCode']);
+                            $amount = sanitize_text_field($responseData['amount']);
+                            $amount = number_format($amount) . ' ریال';
                             $cardNumber = sanitize_text_field($responseData['cardNumber']);
                             $ip = sanitize_text_field($responseData['ip']);
                             $date = sanitize_text_field($responseData['date']);
@@ -509,11 +515,13 @@ function tabapay_gateway()
                             $Note = sprintf(
                                 __('پرداخت موفقیت آمیز بود.
                                     <br/> کد پیگیری : %1$s
-                                    <br/> شماره کارت : %2$s
-                                    <br/> آی‌پی : %3$s
-                                    <br/> تاریخ : %4$s
-                                    <br/> نوع تایید : تاباپی', 'tabapay-gateway'),
+                                    <br/> مبلغ : %2$s
+                                    <br/> شماره کارت : %3$s
+                                    <br/> آی‌پی : %4$s
+                                    <br/> تاریخ : %5$s
+                                    <br/> نوع تایید : خریدار', 'tabapay-gateway'),
                                 esc_html($Transaction_ID),
+                                esc_html($amount),
                                 esc_html($cardNumber),
                                 esc_html($ip),
                                 esc_html($date)
